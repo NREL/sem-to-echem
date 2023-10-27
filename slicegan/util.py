@@ -254,7 +254,7 @@ def generate_volume(pth, imtype, netG, nz=64):
     """
     lz = 6
 
-    device = torch.device('cuda:0' if (torch.cuda.is_available() and ngpu > 0) else 'cpu')
+    device = torch.device('cuda:0' if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else 'cpu')
     netG.to(device)
     if device.type == 'cpu':
         netG.load_state_dict(torch.load(pth + '_Gen.pt', map_location='cpu'))
