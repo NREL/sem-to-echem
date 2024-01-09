@@ -8,7 +8,7 @@ def plot_volume(volume, title=None, ax=None, show_zero=False, cmap='viridis'):
         volume += 1
     z, x, y = volume.nonzero()
     c = volume[volume.nonzero()]
-    ax.scatter(x, y, z, c=c, alpha=0.5, cmap=cmap)
+    ax.scatter(x, y, z, c=c, alpha=0.01, cmap=cmap)
     #ax.set_xticks([])
     #ax.set_yticks([])
     #ax.set_zticks([])

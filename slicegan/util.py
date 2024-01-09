@@ -172,15 +172,15 @@ def graph_plot(data,labels,pth,name):
     plt.savefig(pth + '_' + name)
     plt.close()
 
-
-def test_img(pth, imtype, netG, nz = 64, lf = 4, periodic=False):
+def make_gif(img_path, model_path, imtype, netG, nz=32, lz=6):
     """
     saves a test volume for a trained or in progress of training generator
-    :param pth: where to save image and also where to find the generator
+    :param img_path: where to save image and also where to find the generator
+    :param model_path: where to save image and also where to find the generator
     :param imtype: image type
     :param netG: Loaded generator class
     :param nz: latent z dimension
-    :param lf: length factor
+    :param lz: length factor
     :param show:
     :param periodic: list of periodicity in axis 1 through n
     :return:
@@ -188,42 +188,28 @@ def test_img(pth, imtype, netG, nz = 64, lf = 4, periodic=False):
     device = torch.device('cuda:0' if (torch.cuda.is_available() and ngpu > 0) else 'cpu')
     netG.to(device)
     if device.type == 'cpu':
-        netG.load_state_dict(torch.load(pth + '_Gen.pt', map_location='cpu'))
+        netG.load_state_dict(torch.load(model_path + '_Gen.pt', map_location='cpu'))
     else:
-        netG.load_state_dict(torch.load(pth + '_Gen.pt'))
+        netG.load_state_dict(torch.load(model_path + '_Gen.pt'))
     netG.eval()
-    #netG.load_state_dict(torch.load(pth + '_Gen.pt'))
-    #netG.eval()
-    #netG.cuda()
+
+    noise = torch.randn(1, nz, lz, lz, lz)
     
-    noise = torch.randn(1, nz, lf, lf, lf)#.cuda()
-    if periodic:
-        if periodic[0]:
-            noise[:, :, :2] = noise[:, :, -2:]
-        if periodic[1]:
-            noise[:, :, :, :2] = noise[:, :, :, -2:]
-        if periodic[2]:
-            noise[:, :, :, :, :2] = noise[:, :, :, :, -2:]
     with torch.no_grad():
         raw = netG(noise)
-    print(raw.size())
-    print('Postprocessing')
-    gb = post_proc(raw, imtype)[0]
-    print(gb.size())
-    exit()
-    if np.any(periodic):
-        if periodic[0]:
-            gb = gb[:-1, :, :]
-        if periodic[1]:
-            gb = gb[:, :-1, :]
-        if periodic[2]:
-            gb = gb[:, :, :-1]
-    tif = np.int_(gb)
 
-    for d in range(3):
-        img_pth = '/'.join(pth.split('/')[:-1] + ['dim{}'.format(d)])
-        os.system('mkdir {}'.format(img_pth))
-        
+    tif = np.int_(post_proc(raw, imtype)[0])
+
+    dim = ['x']#, 'y', 'z']
+    if not os.path.isdir(img_path):
+        os.makedirs(img_path)
+    for d in range(len(dim)):
+        img_path_d = '/'.join([img_path, 'dim_{}'.format(dim[d])])
+        if not os.path.isdir(img_path_d):
+            os.makedirs(img_path_d)
+        else:
+            os.system('rm {}/*'.format(img_path_d))
+
         for i in range(tif.shape[d]):
             plt.figure()
             if d == 0:
@@ -235,15 +221,12 @@ def test_img(pth, imtype, netG, nz = 64, lf = 4, periodic=False):
             plt.imshow(img, cmap='gray', vmin=0, vmax=255)
             plt.xticks([])
             plt.yticks([])
-            plt.savefig(img_pth+'/{:03d}.png'.format(i), dpi=150, bbox_inches='tight')
+            plt.savefig(img_path_d+'/{:03d}.png'.format(i), dpi=150, bbox_inches='tight')
             plt.close()
 
+        os.system('convert -delay 15 -loop 0 {}/*.png {}/dim_{}.gif'.format(img_path_d, img_path, dim[d]))
 
-    tifffile.imwrite(pth + '.tiff', tif)
-
-    return tif, raw, netG
-
-def generate_volume(pth, imtype, netG, nz=64):
+def generate_volume(pth, imtype, netG, nz=32, lz=6):
     """
     saves a test volume for a trained or in progress of training generator
     :param pth: where to save image and also where to find the generator
@@ -252,9 +235,8 @@ def generate_volume(pth, imtype, netG, nz=64):
     :param nz: latent z dimension
     :return:
     """
-    lz = 6
 
-    device = torch.device('cuda:0' if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else 'cpu')
+    device = torch.device('cuda:0' if (torch.cuda.is_available() and ngpu > 0) else 'cpu')
     netG.to(device)
     if device.type == 'cpu':
         netG.load_state_dict(torch.load(pth + '_Gen.pt', map_location='cpu'))
