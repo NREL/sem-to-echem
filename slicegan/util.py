@@ -185,7 +185,7 @@ def make_gif(img_path, model_path, imtype, netG, nz=32, lz=6):
     :param periodic: list of periodicity in axis 1 through n
     :return:
     """
-    device = torch.device('cuda:0' if (torch.cuda.is_available() and ngpu > 0) else 'cpu')
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     netG.to(device)
     if device.type == 'cpu':
         netG.load_state_dict(torch.load(model_path + '_Gen.pt', map_location='cpu'))
@@ -236,7 +236,8 @@ def generate_volume(pth, imtype, netG, nz=32, lz=6):
     :return:
     """
 
-    device = torch.device('cuda:0' if (torch.cuda.is_available() and ngpu > 0) else 'cpu')
+    # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cpu')
     netG.to(device)
     if device.type == 'cpu':
         netG.load_state_dict(torch.load(pth + '_Gen.pt', map_location='cpu'))

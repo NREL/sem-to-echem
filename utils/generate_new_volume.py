@@ -1,6 +1,6 @@
 from slicegan import networks, util
 
-def generate_new_volume(model_path='model/sliceGAN'):
+def generate_new_volume(model_path='model/sliceGAN', lz=8):
     ## Data Processing
     # Define image type (colour, grayscale, three-phase or two-phase.
     # n-phase materials must be segmented)
@@ -16,7 +16,7 @@ def generate_new_volume(model_path='model/sliceGAN'):
     # z vector depth
     z_channels = 32
 
-    # z vector dimension - this determines output size
+    # z vector dimension, lz - this determines output size
     # lz size table for reference:
     # lz =  4 -> output dim = 64
     # lz =  6 -> output dim = 128
@@ -27,7 +27,6 @@ def generate_new_volume(model_path='model/sliceGAN'):
     # lz = 24 -> output dim = 704
     # lz = 32 -> output dim = 960
     # lz = 40 -> output dim = 1216
-    lz = 8
 
     # Number of layers in G and D
     lays = 5
