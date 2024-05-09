@@ -253,5 +253,31 @@ def generate_volume(pth, imtype, netG, nz=32, lz=6):
     
     return out
 
+def generate_volume_anisotropic(pth, imtype, netG, nz=32, lz_0=6, lz_1=6, lz_2=6):
+    """
+    saves a test volume for a trained or in progress of training generator
+    :param pth: where to save image and also where to find the generator
+    :param imtype: image type
+    :param netG: Loaded generator class
+    :param nz: latent z dimension
+    :return:
+    """
+
+    # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cpu')
+    netG.to(device)
+    if device.type == 'cpu':
+        netG.load_state_dict(torch.load(pth + '_Gen.pt', map_location='cpu'))
+    else:
+        netG.load_state_dict(torch.load(pth + '_Gen.pt'))
+    netG.eval()
+    
+    noise = torch.randn(1, nz, lz_0, lz_1, lz_2, device=device)
+    with torch.no_grad():
+        out = netG(noise)
+
+    out = post_proc(out, imtype, plotting=False)[0].numpy()
+    
+    return out
 
 
