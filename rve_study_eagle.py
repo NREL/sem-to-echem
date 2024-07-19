@@ -122,7 +122,7 @@ def calc_properties(vol):
     
     # Run simulations at several rates
     current = params['Current function [A]'] # nominal is 1 C
-    rate = [0.5, 1, 2]
+    rate = [0.2, 1, 3]
     for r in rate:
         params['Current function [A]'] = r * current
         sim = pybamm.Simulation(model,parameter_values=params)
@@ -133,20 +133,20 @@ def calc_properties(vol):
         except:
             capacity = np.NaN
             
-        if r == 0.5:
-            qdis_Cb2 = np.max(capacity)
+        if r == 0.2:
+            qdis_Cb5 = np.max(capacity)
         if r == 1:
             qdis_1C = np.max(capacity)
-        if r == 2:
-            qdis_2C = np.max(capacity)
+        if r == 3:
+            qdis_3C = np.max(capacity)
     
     return {
         "vf_particle": [vf_particle],
         "vf_pore": [vf_pore],
         "D_eff": [D_eff],
-        "qdis_Cb2": [qdis_Cb2],
+        "qdis_Cb5": [qdis_Cb5],
         "qdis_1C": [qdis_1C],
-        "qdis_2C": [qdis_2C],
+        "qdis_3C": [qdis_3C],
     }
 
 def gen_volumes_and_rve(reduction, subregion_id, subregion, output_sz=512, is_scale_for_reduction=True,
