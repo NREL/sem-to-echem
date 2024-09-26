@@ -1,2 +1,4 @@
 *.pyc
 model/
+results/
+figures/
